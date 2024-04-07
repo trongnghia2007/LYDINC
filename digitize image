@@ -1,0 +1,38 @@
+import cv2
+import numpy as np
+import pandas as pd
+import os
+
+'''
+class ImageDigitizer:
+    def __init__(self, image_path):  
+        self.image_path = image_path
+    
+    def digitize(self):
+        image = cv2.imread(self.image_path)
+        #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #height, width = gray_image.shape
+        height, width = image.shape
+        data = np.empty((height, width), dtype=np.uint8)
+        #np.copyto(data, gray_image)
+        np.copyto(data, image)
+        df = pd.DataFrame(data)
+        df.to_csv('image_ouput.csv', index=False, header=False)
+'''
+
+def digitize(folder_path):
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.jpg') or filename.endswith('.jpg') or filename.endswith('.png'):
+            image_path = os.path.join(folder_path, filename)
+            
+            image = cv2.imread(image_path)
+            height, width, channels = image.shape
+            data = image.reshape((height * width, channels))  # Reshape to 2D array (pixel rows, channels)
+            #data = np.empty((height, width), dtype=np.uint8)
+            np.copyto(data, image)
+            df = pd.DataFrame(data)
+            df.to_csv('D:/User/skin_photos/image_ouput.csv', index=False, header=False)
+    
+input_folder_path = 'D:/User/skin_photos'
+
+digitize(input_folder_path)

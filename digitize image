@@ -1,38 +1,44 @@
-import cv2
-import numpy as np
-import pandas as pd
 import os
+import numpy as np
+from PIL import Image
 
-'''
-class ImageDigitizer:
-    def __init__(self, image_path):  
-        self.image_path = image_path
+# Đường dẫn đến thư mục chứa các ảnh
+folder_path = 'D:/User/skin_photos'
+
+# Đường dẫn tới tệp CSV đầu ra
+csv_path = 'D:/User/skin_photos/output.csv'
+
+# Kích thước mới cho ảnh sau khi reshape
+new_size = (28, 28)
+
+# Hàm chuyển ảnh sang dạng CSV và ghi vào tệp CSV đã có (luôn nối thêm)
+def image_to_csv(image_path, csv_path):
+    # Bước 1: Mở ảnh
+    img = Image.open(image_path)
     
-    def digitize(self):
-        image = cv2.imread(self.image_path)
-        #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        #height, width = gray_image.shape
-        height, width = image.shape
-        data = np.empty((height, width), dtype=np.uint8)
-        #np.copyto(data, gray_image)
-        np.copyto(data, image)
-        df = pd.DataFrame(data)
-        df.to_csv('image_ouput.csv', index=False, header=False)
-'''
-
-def digitize(folder_path):
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.jpg') or filename.endswith('.jpg') or filename.endswith('.png'):
-            image_path = os.path.join(folder_path, filename)
-            
-            image = cv2.imread(image_path)
-            height, width, channels = image.shape
-            data = image.reshape((height * width, channels))  # Reshape to 2D array (pixel rows, channels)
-            #data = np.empty((height, width), dtype=np.uint8)
-            np.copyto(data, image)
-            df = pd.DataFrame(data)
-            df.to_csv('D:/User/skin_photos/image_ouput.csv', index=False, header=False)
+    # Bước 2: Chuyển đổi sang chế độ RGB nếu chưa trong chế độ này
+    img = img.convert('RGB')
     
-input_folder_path = 'D:/User/skin_photos'
+    # Bước 3: Resize ảnh về kích thước mới
+    img = img.resize(new_size)
+    
+    # Bước 4: Chuyển đổi ảnh thành mảng NumPy
+    img_array = np.array(img)
+    
+    # Bước 5: Định dạng lại mảng để mỗi hàng đại diện cho một pixel (làm phẳng chiều rộng và chiều cao, giữ các kênh RGB nguyên vẹn)
+    height, width, channels = img_array.shape
+    reshaped_array = img_array.reshape(height * width, channels)
+    
+    # Bước 6: Ghi vào tệp CSV đã có (luôn nối thêm), dùng mode 'a' để append vào cuối file
+    with open(csv_path, 'a') as file:
+        # Chuyển đổi mảng 2D thành một dòng trong file CSV
+        flattened_row = ','.join(map(str, reshaped_array.flatten()))
+        file.write(flattened_row + '\n')
 
-digitize(input_folder_path)
+# Lặp qua tất cả các tệp trong thư mục và ghi vào tệp CSV đã có (luôn nối thêm)
+for filename in os.listdir(folder_path):
+    if filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png'):
+        image_path = os.path.join(folder_path, filename)
+        image_to_csv(image_path, csv_path)
+
+print(f'Đã ghi tất cả các ảnh trong thư mục {folder_path} vào tệp CSV {csv_path} (nối thêm).')
